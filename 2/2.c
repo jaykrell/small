@@ -44,7 +44,6 @@ int main()
     opt->MajorSubsystemVersion = 6;
     opt->ImageBase = 0x10000;
     opt->Subsystem = IMAGE_SUBSYSTEM_WINDOWS_CUI;
-    opt->DllCharacteristics = IMAGE_DLLCHARACTERISTICS_NO_BIND;
 
     a.section.VirtualAddress = 0x1000;
     a.section.SizeOfRawData = 0x1000;

@@ -1,7 +1,6 @@
-// This program writes a simple not-small 2 page valid executable.
-// The executable's code is just a breakpoint.
+// This program writes a small valid executable that returns 42.
 // It works.
-// This is then a starting point for minimization.
+// File is 518 bytes (subject to minor optimization of app)
 #include <stdio.h>
 #include <windows.h>
 
