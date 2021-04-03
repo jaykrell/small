@@ -32,7 +32,7 @@ int main()
     nt->FileHeader.Machine = IMAGE_FILE_MACHINE_AMD64;
     nt->FileHeader.SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER64);
     nt->FileHeader.NumberOfSections = 1;
-    nt->FileHeader.Characteristics = IMAGE_FILE_EXECUTABLE_IMAGE | IMAGE_FILE_RELOCS_STRIPPED;
+    nt->FileHeader.Characteristics = IMAGE_FILE_EXECUTABLE_IMAGE;
 
     opt->Magic = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
     opt->AddressOfEntryPoint = 0x1000;
