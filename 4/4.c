@@ -17,6 +17,8 @@
 // AMD64 images seem to be more validated so do not work.
 //
 // Optional header can be shrunk a bit -- the data directories can be reduced to zero. Does not work.
+//
+// MS-DOS header and PE header can overlap.
 #include <stdio.h>
 #include <windows.h>
 
@@ -43,19 +45,22 @@ int main()
         IMAGE_NT_HEADERS32 nt;
         IMAGE_SECTION_HEADER section;
     } a;
-    // Empirically, not the entire section header is needed. I guess zero padding is ok?
-    int imageSize = sizeof(a) - 24;
-    FILE* file = fopen("5.exe", "wb");
-    IMAGE_OPTIONAL_HEADER32* opt = &a.nt.OptionalHeader;
-    IMAGE_DOS_HEADER* dos = &a.dos;
-    IMAGE_NT_HEADERS32* nt = &a.nt;
-
     ZeroMemory(&a, sizeof(a));
+    FILE* file = fopen("5.exe", "wb");
+    IMAGE_DOS_HEADER* dos = &a.dos;
+
+    // PE header and MS-DOS header can overlap.
+    dos->e_lfanew = 16;
+    IMAGE_NT_HEADERS32* nt = (IMAGE_NT_HEADERS32*)(dos->e_lfanew + (char*)&a);
+    IMAGE_OPTIONAL_HEADER32* opt = &nt->OptionalHeader;
+    IMAGE_SECTION_HEADER* section = (IMAGE_SECTION_HEADER*)(1 + nt);
+
+    // Empirically, not the entire section header is needed. I guess zero padding is ok?
+    int imageSize = (char*)(section + 1) - (char*)&a - 24;
 
     // msdos header
     ((char*)dos)[0] = 'M';
     ((char*)dos)[1] = 'Z';
-    dos->e_lfanew = sizeof(a.dos);
 
     // PE header; can it overlap DOS?
     ((char*)nt)[0] = 'P';
@@ -73,19 +78,19 @@ int main()
 
     // Should be 0x200 but down to this is accepted.
     // Sometimes must be less than entry point, but not always.
-    opt->SizeOfHeaders = 0x5A;
+    opt->SizeOfHeaders = 0x3d;
 
     opt->MajorOperatingSystemVersion = 6;
     opt->MajorSubsystemVersion = 6;
     opt->ImageBase = 0x10000;
     opt->Subsystem = IMAGE_SUBSYSTEM_WINDOWS_CUI;
 
-    a.section.VirtualAddress = 0x1000;
-    a.section.SizeOfRawData = 1; // not zero
-    a.section.Misc.VirtualSize = 0x1000;
-    a.section.PointerToRawData = 1; // not zero
+    section->VirtualAddress = 0x1000;
+    section->SizeOfRawData = 1; // not zero
+    section->Misc.VirtualSize = 0x1000;
+    section->PointerToRawData = 1; // not zero
     // Nice idea, but not needed
-    //a.section.Characteristics = IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
+    //section->Characteristics = IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
 
     memcpy(2 + (char*)&a, app, functionSize);
 

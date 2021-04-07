@@ -3,7 +3,6 @@
  cl /Zi /Gy /MD 3.c /link msvcrt.lib /incremental:no
  3.exe
  dir *.exe
- test.cmd
 
 test:
  test.cmd
