@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-int app()
+int app(void)
 {
     return 42;
 }
@@ -25,15 +25,15 @@ int main()
     struct
     {
         IMAGE_DOS_HEADER dos;
-        IMAGE_NT_HEADERS nt;
+        IMAGE_NT_HEADERS64 nt;
         IMAGE_SECTION_HEADER section;
-        char pad[0x200 - (sizeof(IMAGE_DOS_HEADER) + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER))];
+        char pad[0x200 - (sizeof(IMAGE_DOS_HEADER) + sizeof(IMAGE_NT_HEADERS64) + sizeof(IMAGE_SECTION_HEADER))];
         char data[0x1000];
     } a;
     FILE* file = fopen("4.exe", "wb");
     IMAGE_OPTIONAL_HEADER64* opt = &a.nt.OptionalHeader;
     IMAGE_DOS_HEADER* dos = &a.dos;
-    IMAGE_NT_HEADERS* nt = &a.nt;
+    IMAGE_NT_HEADERS64* nt = &a.nt;
 
     ZeroMemory(&a, sizeof(a));
 
