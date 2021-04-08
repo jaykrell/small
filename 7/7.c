@@ -39,7 +39,7 @@ int main()
 
     // Most data directories are not needed. Truncate optional header. [1] or [0]
     // ought to work here. [7] is experimentally found and makes no sense.
-    nt->FileHeader.SizeOfOptionalHeader = 0x50; // possible limit, not understood (optional and PE overlap)
+    nt->FileHeader.SizeOfOptionalHeader = 0x50; // possible limit, not understood
     section = (IMAGE_SECTION_HEADER*)(nt->FileHeader.SizeOfOptionalHeader + (char*)opt);
 
     //imageSize = sizeof(IMAGE_DOS_HEADER) + sizeof(IMAGE_NT_HEADERS64) + sizeof(IMAGE_SECTION_HEADER);
@@ -79,6 +79,4 @@ int main()
     memcpy(2 + (char*)dos, app, functionSize); // dos can work too but no point really
 
     fwrite(&a, 1, imageSize, fopen("8.exe", "wb"));
-
-    if (IsDebuggerPresent()) __debugbreak();
 }
