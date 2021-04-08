@@ -57,7 +57,7 @@ int main()
     IMAGE_NT_HEADERS64* nt = (IMAGE_NT_HEADERS64*)(dos->e_lfanew + (char*)dos);
     IMAGE_OPTIONAL_HEADER64* opt = &nt->OptionalHeader;
 
-    nt->FileHeader.SizeOfOptionalHeader = sizeof(*opt); // possible limit, not understood (optional and PE overlap)
+    nt->FileHeader.SizeOfOptionalHeader = sizeof(*opt);
     IMAGE_SECTION_HEADER* section = (IMAGE_SECTION_HEADER*)(nt->FileHeader.SizeOfOptionalHeader + (char*)opt);
 
     // msdos header
