@@ -52,17 +52,16 @@ extern char app_end[1];
 extern int call_WriteFile[];
 }
 
-#define FILE_ALIGN 0x1000
+#define FILE_ALIGN 0x1000 /* There is no section data anyway, just headers. */
 #define ALIGN      0x1000
 
 #pragma pack(1)
 
 struct A
 {
-    // Overlap import data with dos header, it is a good fit, pad is 8 bytes
+    // Overlap import data with dos header, it is a pretty good fit,
     USHORT dosMagic;
     USHORT pad3[1];
-    // Dos header has a field at start and end, and this fits between them.
     IMAGE_THUNK_DATA64 pfnWriteFile;
     IMAGE_THUNK_DATA64 pfn0;
     IMAGE_IMPORT_DESCRIPTOR importKernel32;
@@ -71,7 +70,7 @@ struct A
 
     IMAGE_NT_HEADERS64_2 nt;
     IMAGE_SECTION_HEADER section;
-    char unexplained[14];
+    char unexplained[15];
     char app[0x1000]; // over allocation
 };
 
