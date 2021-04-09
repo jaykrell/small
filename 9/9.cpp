@@ -36,7 +36,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER64_2 {
     DWORD       LoaderFlags;
     DWORD       NumberOfRvaAndSizes;
 //  IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-    IMAGE_DATA_DIRECTORY DataDirectory[3]; // why not 2?
+    IMAGE_DATA_DIRECTORY DataDirectory[2];
 } IMAGE_OPTIONAL_HEADER64_2, *PIMAGE_OPTIONAL_HEADER64_2;
 
 typedef struct _IMAGE_NT_HEADERS64_2 {
@@ -49,7 +49,7 @@ extern "C"
 {
 extern char app[1];
 extern char app_end[1];
-extern int call_WriteFile[];
+extern int call_puts[];
 }
 
 #define FILE_ALIGN 0x1000 /* There is no section data anyway, just headers. */
@@ -62,15 +62,15 @@ struct A
     // Overlap import data with dos header, it is a pretty good fit,
     USHORT dosMagic;
     USHORT pad3[1];
-    IMAGE_THUNK_DATA64 pfnWriteFile;
+    IMAGE_THUNK_DATA64 pfnputs;
     IMAGE_THUNK_DATA64 pfn0;
-    IMAGE_IMPORT_DESCRIPTOR importKernel32;
+    IMAGE_IMPORT_DESCRIPTOR importMsvcr;
     IMAGE_IMPORT_DESCRIPTOR import0;
     ULONG dosLfaNew;
 
     IMAGE_NT_HEADERS64_2 nt;
     IMAGE_SECTION_HEADER section;
-    char unexplained[15];
+    char waste[56];
     char app[0x1000]; // over allocation
 };
 
@@ -82,18 +82,18 @@ int main()
     {
         IMAGE_DOS_SIGNATURE,
         {0},
-        //{ 0x1000 + offsetof(A, strWriteFile) },
+        //{ 0x1000 + offsetof(A, strputs) },
         { 0x1000 + offsetof(A, nt.OptionalHeader.MajorLinkerVersion) },
         { 0 }, // pfn0
         // importKernel
         {
-            0x1000 + offsetof(A, pfnWriteFile),
+            0x1000 + offsetof(A, pfnputs),
             0, // time
             0, // forwarder
-            //0x1000 + offsetof(A, strKernel32),
+            //0x1000 + offsetof(A, strMsvcr),
             //0x1000 + offsetof(A, nt.OptionalHeader.MinorOperatingSystemVersion),
             0x1000 + offsetof(A, nt.FileHeader.TimeDateStamp),
-            0x1000 + offsetof(A, pfnWriteFile)
+            0x1000 + offsetof(A, pfnputs)
         },
         { }, // import0
         sizeof(IMAGE_DOS_HEADER),
@@ -111,7 +111,7 @@ int main()
             },
             {
                 IMAGE_NT_OPTIONAL_HDR64_MAGIC,
-                -1, // MajorLinkerVersion // \0\0WriteFile\0 fits here
+                -1, // MajorLinkerVersion // \0\0puts\0 fits here
                 -1, // MinorLinkerVersion
                 -1, // SizeOfCode
                 -1, // SizeOfInitializedData
@@ -141,7 +141,7 @@ int main()
                 IMAGE_DIRECTORY_ENTRY_IMPORT + 1, // number of data directories
                 {
                     { }, // exports
-                    { 0x1000 + offsetof(A, importKernel32) }, // imports
+                    { 0x1000 + offsetof(A, importMsvcr) }, // imports
                 }
             }
         },
@@ -157,14 +157,12 @@ int main()
             0, // lines (obj only)
             IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ, // Characteristics
         },
-        {}, // unexplained
-        { } // app
     };
     typedef void (*APP)(void);
 
-    memcpy(&a.nt.OptionalHeader.MajorLinkerVersion, "\0\0WriteFile", sizeof("\0\0WriteFile"));
-    //memcpy(&a.nt.OptionalHeader.MinorOperatingSystemVersion, "kernel32", sizeof("kernel32"));
-    memcpy(&a.nt.FileHeader.TimeDateStamp, "kernel32", sizeof("kernel32"));
+    memcpy(&a.nt.OptionalHeader.MajorLinkerVersion, "\0\0puts", sizeof("\0\0puts"));
+    //memcpy(&a.nt.OptionalHeader.MinorOperatingSystemVersion, "msvcrt", sizeof("msvcrt"));
+    memcpy(&a.nt.FileHeader.TimeDateStamp, "msvcrt", sizeof("msvcrt"));
 
     memcpy(a.app, app, functionSize);
     //a.app[0] = 0xcc;
@@ -173,8 +171,8 @@ int main()
 
     ((APP)&app)();
 
-    int* acall = (int*)(&a.app[((char*)&call_WriteFile - app)]);
-    acall[-1] = ((char*)&a.pfnWriteFile - (char*)acall) - FILE_ALIGN + ALIGN;
+    int* acall = (int*)(&a.app[((char*)&call_puts - app)]);
+    acall[-1] = ((char*)&a.pfnputs - (char*)acall) - FILE_ALIGN + ALIGN;
 
     fwrite(&a, 1, imageSize, fopen("10.exe", "wb"));
 }
