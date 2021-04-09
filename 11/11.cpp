@@ -1,6 +1,6 @@
 // This takes the learnings of 10.cpp and produces
 // the old "return 42" case (case 7).
-// Same funtionality, same size, but less trial and error.
+// Same functionality, same size, but less trial and error.
 
 #include <stdio.h>
 #include <windows.h>

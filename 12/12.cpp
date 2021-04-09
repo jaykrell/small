@@ -1,6 +1,5 @@
 // This takes the learnings of 10.cpp and produces
-// the old "return 42" case (case 7).
-// Same funtionality, same size, but less trial and error.
+// printing hello in 280 bytes.
 
 #include <stdio.h>
 #include <windows.h>
